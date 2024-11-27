@@ -9,7 +9,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 app.use(bodyParser.json())
 app.use(
   cors({
-    origin: ['https://spoticeipt.vercel.app'],
+    origin: ['https://spoticeipt.vercel.app', 'http://localhost:3000'],
   })
 )
 app.get('/music-taste', async (req, res) => {
