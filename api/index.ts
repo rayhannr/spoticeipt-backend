@@ -28,8 +28,8 @@ app.get('/music-taste', async (req, res) => {
     })
 
     res.status(200).json({ taste: result.choices[0].message.content || '' })
-  } catch (error) {
-    res.status(500).json({ error })
+  } catch ({ status, error }) {
+    res.status(status || 500).json({ error })
   }
 })
 
