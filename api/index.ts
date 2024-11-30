@@ -13,17 +13,25 @@ app.use(
   })
 )
 app.get('/music-taste', async (req, res) => {
-  const { tracks } = req.query
+  const { tracks, type = 'insult' } = req.query
   if (!tracks) {
-    res.status(500).json({ message: 'you should add "tracks" query' })
+    res.status(400).json({ message: 'you should add "tracks" query' })
+    return
   }
+  if (type && type !== 'compliment' && type !== 'insult') {
+    res.status(400).json({ message: 'you can either compliment or insult' })
+    return
+  }
+
   try {
     const parsedTracks = typeof tracks === 'string' ? [tracks] : (tracks as string[])
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `banter or insult the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
+    const prompt = `${type} the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
       '\n'
-    )}\n make it as brief as no more than 120 words and enough for other people to laugh about it`
+    )}\n make it as brief as no more than 120 words ${
+      type === 'insult' ? 'and enough for other people to laugh about it' : ''
+    }. at the end, give one word to describe it`
     const result = await model.generateContent(prompt)
 
     res.status(200).json({ taste: result.response.text() || '' })
