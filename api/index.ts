@@ -32,7 +32,7 @@ app.get('/music-taste', async (req, res) => {
       '\n'
     )}\n make it as brief as no more than 120 words ${
       type === 'insult' ? 'and enough for other people to laugh about it' : ''
-    }. at the end, give one word to describe it ${asWhat} with this format 'Conclusion: {one_word_description}'`
+    }. at the end, give one word to describe it ${asWhat} with this format 'Your taste is absolutely {one_word_description}'`
     const result = await model.generateContent(prompt)
 
     res.status(200).json({ taste: result.response.text() || '' })
