@@ -21,7 +21,9 @@ app.get('/music-taste', async (req, res) => {
     const parsedTracks = typeof tracks === 'string' ? [tracks] : (tracks as string[])
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    const prompt = `banter the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join('\n')}`
+    const prompt = `banter or insult the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
+      '\n'
+    )}\n make it as brief as no more than 120 words and enough for other people to laugh about it`
     const result = await model.generateContent(prompt)
 
     res.status(200).json({ taste: result.response.text() || '' })
