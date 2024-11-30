@@ -1,10 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
 const app = express()
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 app.use(bodyParser.json())
 app.use(
@@ -19,15 +19,12 @@ app.get('/music-taste', async (req, res) => {
   }
   try {
     const parsedTracks = typeof tracks === 'string' ? [tracks] : (tracks as string[])
-    const content = `banter the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join('\n')}`
-    const result = await openai.chat.completions.create({
-      messages: [{ role: 'user', content }],
-      model: 'gpt-4o-mini',
-      max_completion_tokens: 50,
-      temperature: 0.7,
-    })
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-    res.status(200).json({ taste: result.choices[0].message.content || '' })
+    const prompt = `banter the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join('\n')}`
+    const result = await model.generateContent(prompt)
+
+    res.status(200).json({ taste: result.response.text() || '' })
   } catch ({ status, error }) {
     res.status(status || 500).json({ error })
   }
