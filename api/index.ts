@@ -25,13 +25,13 @@ app.get('/music-taste', async (req, res) => {
 
   try {
     const parsedTracks = typeof tracks === 'string' ? [tracks] : (tracks as string[])
-    const asWhat = `as ${type === 'compliment' ? 'good' : 'bad'} as possible`
+    const asWhat = type === 'compliment' ? 'good' : 'bad'
 
-    const contents = `${type} ${asWhat} the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
+    let contents = `say something ${asWhat} about the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
       '\n'
     )}\n make it as brief as no more than 120 words ${
       type === 'insult' ? 'and enough for other people to laugh about it' : ''
-    }. at the end, give one word to describe it ${asWhat} with this format 'Your taste is absolutely {one_word_description}'`
+    }. at the end, give one word (all lowercase) to describe it ${asWhat} with this format 'Your taste is absolutely {one_word_description}'`
     const result = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents })
 
     res.status(200).json({ taste: result.text || '' })
