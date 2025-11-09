@@ -1,10 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 
 const app = express()
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
 app.use(bodyParser.json())
 app.use(
@@ -25,19 +25,35 @@ app.get('/music-taste', async (req, res) => {
 
   try {
     const parsedTracks = typeof tracks === 'string' ? [tracks] : (tracks as string[])
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
     const asWhat = `as ${type === 'compliment' ? 'good' : 'bad'} as possible`
 
-    const prompt = `${type} ${asWhat} the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
+    const contents = `${type} ${asWhat} the music taste of someone whose top tracks is as follows:\n ${parsedTracks.join(
       '\n'
     )}\n make it as brief as no more than 120 words ${
       type === 'insult' ? 'and enough for other people to laugh about it' : ''
     }. at the end, give one word to describe it ${asWhat} with this format 'Your taste is absolutely {one_word_description}'`
-    const result = await model.generateContent(prompt)
+    const result = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents })
 
-    res.status(200).json({ taste: result.response.text() || '' })
-  } catch ({ status, error }) {
-    res.status(status || 500).json({ error })
+    res.status(200).json({ taste: result.text || '' })
+  } catch (err) {
+    let parsed = null
+    if (err instanceof Error) {
+      try {
+        parsed = JSON.parse(err.message)
+      } catch {}
+    }
+
+    if (parsed?.error) {
+      const { code, message, status, details } = parsed.error
+      res.status(code || 500).json({
+        message: message || 'Unknown API error',
+        status,
+        details,
+      })
+      return
+    }
+
+    res.status(500).json({ message: err.message || 'Internal server error' })
   }
 })
 
